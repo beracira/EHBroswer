@@ -1,6 +1,10 @@
 package me.beracira.ehbroswer;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.tv.TvContentRating;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -35,14 +39,48 @@ public class MainActivity extends AppCompatActivity {
 
         String[] temp = new String[100];
 
-//        for (int i = 0; i < 100; ++i) {
-//            temp[i] = "http://csclub.uwaterloo.ca/~z283chen/" + Integer.toString(i % 10) + ".jpg";
-//        }
+        for (int i = 0; i < 100; ++i) {
+            temp[i] = "http://csclub.uwaterloo.ca/~z283chen/" + Integer.toString(i % 10) + ".jpg";
+        }
 
         adapter = new MyAdapter(temp);
         recyclerView.setAdapter(adapter);
 
     }
+
+
+    public void loadBitmap(String url, ImageView imageView) {
+        if (cancelPotentialWork(url, imageView)) {
+//            Bitmap mPlaceHolder = BitmapFactory.decodeResource(getResources(), R.drawable.loading);
+            final BitmapWorkerTask task = new BitmapWorkerTask(imageView);
+            final BitmapWorkerTask.AsyncDrawable asyncDrawable =
+                    new BitmapWorkerTask.AsyncDrawable(getResources(), null, task);
+            imageView.setImageDrawable(asyncDrawable);
+            task.execute(url);
+        }
+    }
+
+    public static boolean cancelPotentialWork(String url, ImageView imageView) {
+        final Drawable drawable = imageView.getDrawable();
+        if (!(drawable instanceof BitmapWorkerTask.AsyncDrawable)) return true;
+        final BitmapWorkerTask bitmapWorkerTask =
+                ((BitmapWorkerTask.AsyncDrawable) (drawable)).getBitmapWorkerTask();
+
+        if (bitmapWorkerTask != null) {
+            final String url_ = bitmapWorkerTask.url;
+            // If bitmapData is not yet set or it differs from the new data
+            if (url_ == null || url_ != url) {
+                // Cancel previous task
+                bitmapWorkerTask.cancel(true);
+            } else {
+                // The same work is already in progress
+                return false;
+            }
+        }
+        // No task associated with the ImageView, or an existing task was cancelled
+        return true;
+    }
+
 
     public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
         private String[] dataSet;
@@ -79,8 +117,9 @@ public class MainActivity extends AppCompatActivity {
 //            if (holder.textView != null)
 //                holder.textView.setText(dataSet[position]);
             if (holder.imageView != null) {
-                BitmapWorkerTask bitmapWorkerTask = new BitmapWorkerTask(holder.imageView);
-                bitmapWorkerTask.execute(dataSet[position]);
+//                BitmapWorkerTask bitmapWorkerTask = new BitmapWorkerTask(holder.imageView);
+//                bitmapWorkerTask.execute(dataSet[position]);
+                loadBitmap(dataSet[position], holder.imageView);
             }
         }
 

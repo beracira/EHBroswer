@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.widget.ImageView;
 
@@ -19,7 +20,7 @@ import java.net.URL;
  */
 public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
     private final WeakReference<ImageView> imageViewWeakReference;
-    private String url = "";
+    public String url = "";
 
 
     public BitmapWorkerTask (ImageView imageView) {
@@ -37,7 +38,7 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
             return BitmapFactory.decodeStream(inputStream);
         } catch (Exception e) {
-            Log.d("error", e.getMessage());
+//            Log.d("error", e.getMessage());
             return null;
         }
     }
@@ -50,24 +51,26 @@ public class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap> {
         if (imageViewWeakReference != null && bitmap != null) {
             final ImageView imageView = imageViewWeakReference.get();
             if (imageView != null) {
-                imageView.setImageBitmap(bitmap);
+                ((CardView) imageView.getParent()).setBackground(new BitmapDrawable(bitmap));
+//                imageView.setImageBitmap(bitmap);
             }
         }
     }
 
-//    static class AsyncDrawable extends BitmapDrawable {
-//        private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
-//
-//        public AsyncDrawable(Resources res, Bitmap bitmap,
-//                             BitmapWorkerTask bitmapWorkerTask) {
-//            super(res, bitmap);
-//            bitmapWorkerTaskReference =
-//                    new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
-//        }
-//
-//        public BitmapWorkerTask getBitmapWorkerTask() {
-//            return bitmapWorkerTaskReference.get();
-//        }
-//    }
+    static class AsyncDrawable extends BitmapDrawable {
+        private final WeakReference<BitmapWorkerTask> bitmapWorkerTaskReference;
+
+        public AsyncDrawable(Resources res, Bitmap bitmap,
+                             BitmapWorkerTask bitmapWorkerTask) {
+            super(res, bitmap);
+            bitmapWorkerTaskReference =
+                    new WeakReference<BitmapWorkerTask>(bitmapWorkerTask);
+        }
+
+        public BitmapWorkerTask getBitmapWorkerTask() {
+            return bitmapWorkerTaskReference.get();
+        }
+    }
+
 }
 
