@@ -136,8 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 imageView = (ImageView) v.findViewById(R.id.iv);
             }
         }
-
-
     }
 
 }
